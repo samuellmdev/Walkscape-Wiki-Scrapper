@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
+    inputs:
+      articles:
+        description: "Só para testar: páginas separadas por vírgula (gera um ZIM pequeno como artefato e não publica)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -25,6 +30,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+      ARTICLES: ${{ inputs.articles }}
       MWOFFLINER: ghcr.io/openzim/mwoffliner:1.17.5
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +43,13 @@ jobs:
       - name: Baixar a wiki (mwoffliner)
         run: |
           mkdir -p raw
-          # a imagem sobe o próprio Redis e passa o --redis; a wiki fica na raiz (/api.php, /load.php), não em /w/
-          docker run --rm -v "$PWD/raw:/out" "$MWOFFLINER" mwoffliner \
+          extra=()
+          if [ -n "$ARTICLES" ]; then extra+=(--articleList="$ARTICLES"); fi
+          # a imagem sobe o próprio Redis e passa o --redis; a wiki fica na raiz (/api.php, /load.php), não em /w/.
+          # scripts/mwoffliner-mylanguage.mjs: os links Special:MyLanguage/<página> da wiki viram links para a página
+          # (sem o patch, o mwoffliner os remove e a navegação entre as páginas some)
+          docker run --rm -v "$PWD/raw:/out" -v "$PWD/scripts:/patch:ro" "$MWOFFLINER" sh -c \
+            'node /patch/mwoffliner-mylanguage.mjs /tmp/mwoffliner/lib/util/rewriteUrls.js && exec mwoffliner "$@"' sh \
             --mwUrl=https://wiki.walkscape.app/ \
             --mwActionApiPath=/api.php \
             --adminEmail="$ADMIN_EMAIL" \
@@ -46,7 +57,8 @@ jobs:
             --customZimTags=walkscape \
             --publisher=openZIM \
             --webp \
-            --outputDirectory=/out
+            --outputDirectory=/out \
+            "${extra[@]}"
           ls -la raw
 
       - uses: actions/setup-python@v5
@@ -60,7 +72,16 @@ jobs:
           for f in raw/*.zim; do python mobile/patch_zim.py "$f" "out/$(basename "$f")"; done
           ls -la out
 
+      - name: Guardar o ZIM de teste
+        if: ${{ inputs.articles != '' && inputs.articles != null }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: zim-teste
+          path: out/*.zim
+          retention-days: 3
+
       - name: Publicar a release
+        if: ${{ inputs.articles == '' || inputs.articles == null }}
         run: |
           tag="v$DAY"
           if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
