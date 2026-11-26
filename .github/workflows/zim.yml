@@ -37,9 +37,10 @@ jobs:
       - name: Baixar a wiki (mwoffliner)
         run: |
           mkdir -p raw
-          # a imagem sobe o próprio Redis e passa o --redis
+          # a imagem sobe o próprio Redis e passa o --redis; a wiki fica na raiz (/api.php, /load.php), não em /w/
           docker run --rm -v "$PWD/raw:/out" "$MWOFFLINER" mwoffliner \
             --mwUrl=https://wiki.walkscape.app/ \
+            --mwActionApiPath=/api.php \
             --adminEmail="$ADMIN_EMAIL" \
             --filenamePrefix=walkscape_offline \
             --customZimTags=walkscape \
