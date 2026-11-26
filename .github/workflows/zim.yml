@@ -1,0 +1,75 @@
+# O ZIM diário da WalkScape Wiki, inteiro no GitHub Actions (sem servidor): todo dia às 03:00 UTC (ou à mão, em
+# Actions > "ZIM da wiki" > Run workflow), o mwoffliner baixa a wiki, mobile/patch_zim.py aplica o layout para celular e
+# a release v<AAAA-MM-DD> recebe o arquivo (criada, ou com o arquivo trocado se já existir).
+#
+# O mwoffliner exige um e-mail de contato (vai no User-Agent dos pedidos à wiki): a variável ADMIN_EMAIL do repositório
+# (Settings > Secrets and variables > Actions > Variables).
+name: ZIM da wiki
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zim
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+      MWOFFLINER: ghcr.io/openzim/mwoffliner:1.17.5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Data e e-mail de contato
+        run: |
+          test -n "$ADMIN_EMAIL" || { echo "::error::defina a variável ADMIN_EMAIL do repositório"; exit 1; }
+          echo "DAY=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - name: Baixar a wiki (mwoffliner)
+        run: |
+          mkdir -p raw
+          docker run --rm --network host -v "$PWD/raw:/out" "$MWOFFLINER" mwoffliner \
+            --mwUrl=https://wiki.walkscape.app/ \
+            --adminEmail="$ADMIN_EMAIL" \
+            --redis=redis://127.0.0.1:6379 \
+            --filenamePrefix=walkscape_offline \
+            --customZimTags=walkscape \
+            --publisher=openZIM \
+            --webp \
+            --outputDirectory=/out
+          ls -la raw
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Layout para celular
+        run: |
+          pip install "libzim>=3.4,<4"
+          mkdir -p out
+          for f in raw/*.zim; do python mobile/patch_zim.py "$f" "out/$(basename "$f")"; done
+          ls -la out
+
+      - name: Publicar a release
+        run: |
+          tag="v$DAY"
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" out/*.zim -R "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$tag" out/*.zim -R "$GITHUB_REPOSITORY" \
+              --title "WalkScape Wiki Dump - $DAY" --notes "Backup automático."
+          fi

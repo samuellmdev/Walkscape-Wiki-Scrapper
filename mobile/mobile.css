@@ -1,0 +1,205 @@
+/* WalkScape Wiki offline (Kiwix): legibilidade e alinhamento no celular.
+   Vem por último, depois do CSS do Timeless e da wiki. Tema claro só: o modo noturno do Kiwix inverte as cores da página
+   inteira, e um tema escuro próprio seria invertido de volta para claro. */
+
+:root {
+  color-scheme: light;
+  /* os tokens do MediaWiki que o CSS da wiki usa (sem o Timeless completo, eles ficavam sem valor) */
+  --background-color-base: #ffffff;
+  --background-color-neutral-subtle: #f5f6f8;
+  --background-color-interactive-subtle: #eef1f5;
+  --color-base: #1d2228;
+  --color-subtle: #545b66;
+  --color-progressive: #2459b3;
+  --color-inverted: #ffffff;
+  --border-color-base: #c3c9d1;
+  --border-color-subtle: #e1e5ea;
+  --ws-accent: #22333d;
+  --ws-accent-soft: #e8eef2;
+  --ws-radius: 10px;
+}
+
+html, body { background: #ffffff !important; }
+body {
+  margin: 0 !important;
+  color: var(--color-base);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* a página: cartão branco centralizado, com respiro nas bordas */
+#content.mw-body {
+  box-sizing: border-box;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 14px 16px 28px;
+  background: #ffffff;
+  border: 0;
+}
+#bodyContent, .mw-parser-output { max-width: 100%; }
+
+/* títulos */
+#firstHeading {
+  font-size: 1.7rem;
+  line-height: 1.25;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 3px solid var(--ws-accent);
+  color: var(--ws-accent);
+  overflow-wrap: anywhere;
+}
+.mw-parser-output h2 {
+  font-size: 1.38rem;
+  line-height: 1.3;
+  margin: 1.7rem 0 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border-color-subtle);
+  color: var(--ws-accent);
+}
+.mw-parser-output h3 { font-size: 1.18rem; margin: 1.3rem 0 0.5rem; color: var(--ws-accent); }
+.mw-parser-output h4, .mw-parser-output h5 { font-size: 1.04rem; margin: 1.1rem 0 0.45rem; }
+.mw-heading h2 .wswb-object-reference, .mw-heading h3 .wswb-object-reference,
+.mw-heading h4 .wswb-object-reference { display: inline-flex; align-items: center; gap: 0.35em; }
+
+/* links */
+a, a:visited { color: var(--color-progressive); }
+a.external { overflow-wrap: anywhere; }
+
+/* o que a wiki esconde com JavaScript (o "Other Languages") e os parágrafos vazios de espaçamento */
+.is-hidden { display: none !important; }
+.mw-parser-output > p:has(> br:only-child) { display: none; }
+
+/* o seletor de idiomas: uma linha de pílulas que rola para o lado */
+.wswb-language-selector { margin: 0.2rem 0 1rem; }
+.wswb-language-selector__inline {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0.1rem 0 0.45rem;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.wswb-language-selector__option { flex: 0 0 auto; }
+.wswb-language-selector__option > a,
+.wswb-language-selector__option > strong {
+  display: inline-block;
+  padding: 0.22rem 0.7rem;
+  border: 1px solid var(--border-color-base);
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  background: #ffffff;
+}
+.wswb-language-selector__current > strong {
+  background: var(--ws-accent);
+  border-color: var(--ws-accent);
+  color: #ffffff;
+}
+.wswb-language-selector__menu, .wswb-language-selector__toggle,
+.wswb-language-selector__toggle-separator { display: none !important; }
+
+/* texto */
+.mw-parser-output p, .mw-parser-output li, .mw-parser-output dd { overflow-wrap: break-word; }
+.mw-parser-output ul, .mw-parser-output ol { padding-left: 1.3em; margin-left: 0; }
+.mw-parser-output li { margin: 0.2rem 0; }
+.mw-parser-output blockquote {
+  margin: 0.9rem 0;
+  padding: 0.65rem 0.9rem;
+  border-left: 4px solid var(--ws-accent);
+  border-radius: 0 var(--ws-radius) var(--ws-radius) 0;
+  background: var(--ws-accent-soft);
+  color: var(--color-base);
+}
+.mw-parser-output blockquote p { margin: 0.2rem 0; }
+
+/* imagens: nunca passam da tela; as ilustrações grandes ficam centralizadas */
+.mw-parser-output img { max-width: 100%; height: auto; }
+.mw-parser-output figure { max-width: 100%; }
+.mw-parser-output figcaption { font-size: 0.86rem; color: var(--color-subtle); }
+.wswb-object-reference img, .wswb-outlined-image img { vertical-align: middle; }
+
+/* tabelas: as largas rolam para o lado em vez de serem cortadas */
+.mw-parser-output table.wikitable {
+  border-collapse: collapse;
+  border: 1px solid var(--border-color-base);
+  background: #ffffff;
+  color: var(--color-base);
+  font-size: 0.93rem;
+}
+.ws-table-scroll {
+  max-width: 100%;
+  margin: 0.8rem 0 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.ws-table-scroll > table.wikitable { margin: 0; }
+/* uma sombra na borda que ainda tem colunas para rolar (some quando se chega ao fim) */
+.ws-table-scroll {
+  background:
+    linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)) 0 0 / 28px 100% no-repeat local,
+    linear-gradient(to left, #fff 30%, rgba(255, 255, 255, 0)) 100% 0 / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 0 0 / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 100% 0 / 12px 100% no-repeat scroll;
+}
+.ws-table-scroll > table.wikitable { background: transparent; }
+.mw-parser-output table.wikitable > * > tr > th,
+.mw-parser-output table.wikitable > * > tr > td {
+  border: 1px solid var(--border-color-base);
+  padding: 0.45rem 0.6rem;
+  vertical-align: middle;
+}
+.mw-parser-output table.wikitable > * > tr > th { background: var(--background-color-interactive-subtle); }
+
+/* a caixa do item/local (infobox) */
+.mw-parser-output table.wswb-infobox {
+  padding: 0 !important;
+  border-radius: var(--ws-radius);
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.mw-parser-output table.wswb-infobox > * > tr:first-child > th {
+  background: var(--ws-accent);
+  color: #ffffff;
+}
+.mw-parser-output table.wswb-infobox > * > tr > th,
+.mw-parser-output table.wswb-infobox > * > tr > td { border-width: 0 0 1px; }
+
+/* os cartões (palavras-chave, facções, atividades): da mesma largura, alinhados */
+.wswb-card-list { gap: 0.55rem; }
+.wswb-card-list > .wswb-card {
+  background: #ffffff;
+  border-color: var(--border-color-base);
+  border-radius: var(--ws-radius);
+  justify-content: flex-start;
+}
+.wswb-card-list > .wswb-card p { margin: 0; }
+
+/* o rodapé do ZIM */
+.zim-footer { border-top: 1px solid var(--border-color-subtle); color: var(--color-subtle); font-size: 0.86rem; }
+
+/* celular */
+@media (max-width: 720px) {
+  #content.mw-body { padding: 12px 14px 24px; }
+  #firstHeading { font-size: 1.55rem; }
+  .mw-parser-output [style*="text-align:justify"], .mw-parser-output [style*="text-align: justify"] {
+    text-align: left !important;
+  }
+  /* figuras que flutuavam ao lado do texto: centralizadas, sem espremer o texto */
+  .mw-parser-output figure.mw-halign-right, .mw-parser-output figure.mw-halign-left,
+  .mw-parser-output .floatright, .mw-parser-output .floatleft {
+    float: none !important;
+    display: table;
+    margin: 0.6rem auto !important;
+  }
+  .mw-parser-output table.wswb-infobox { float: none !important; width: 100% !important; margin: 0 0 1rem !important; }
+  .wswb-card-list > .wswb-card { flex: 1 1 100%; width: 100%; min-width: 0; min-height: 3.4rem; padding: 0.6rem 0.85rem; }
+  .mw-parser-output table.wikitable { font-size: 0.9rem; }
+  .mw-parser-output table.wikitable > * > tr > th,
+  .mw-parser-output table.wikitable > * > tr > td { padding: 0.4rem 0.5rem; }
+}
