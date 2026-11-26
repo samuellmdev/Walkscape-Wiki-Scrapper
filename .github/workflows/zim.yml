@@ -22,11 +22,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 300
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
     env:
       GH_TOKEN: ${{ github.token }}
       ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
@@ -42,10 +37,10 @@ jobs:
       - name: Baixar a wiki (mwoffliner)
         run: |
           mkdir -p raw
-          docker run --rm --network host -v "$PWD/raw:/out" "$MWOFFLINER" mwoffliner \
+          # a imagem sobe o próprio Redis e passa o --redis
+          docker run --rm -v "$PWD/raw:/out" "$MWOFFLINER" mwoffliner \
             --mwUrl=https://wiki.walkscape.app/ \
             --adminEmail="$ADMIN_EMAIL" \
-            --redis=redis://127.0.0.1:6379 \
             --filenamePrefix=walkscape_offline \
             --customZimTags=walkscape \
             --publisher=openZIM \
