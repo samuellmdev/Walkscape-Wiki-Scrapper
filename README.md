@@ -21,7 +21,12 @@ means, [`.github/workflows/mobile.yml`](.github/workflows/mobile.yml) applies th
 - wide tables scroll sideways inside the page instead of being cut off, with a shadow on the side that has more columns;
 - item boxes, cards and floating images aligned to the screen width on phones.
 
-The page content, links, search and images are unchanged. To apply it to an existing file by hand:
+The page content, search and images are unchanged.
+
+**Links between pages.** The wiki routes almost every link through `Special:MyLanguage/<page>`, which mwoffliner
+cannot keep, so it used to drop those links and leave plain text (the main page cards, item and location references).
+[`scripts/mwoffliner-mylanguage.mjs`](scripts/mwoffliner-mylanguage.mjs) patches mwoffliner so they link to the page
+in the same language when it exists (`Jarvonia/de` from a German page), or to the English page otherwise. To apply it to an existing file by hand:
 
 ```sh
 pip install "libzim>=3.4,<4"
