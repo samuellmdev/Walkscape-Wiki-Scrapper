@@ -36,11 +36,35 @@ jobs:
       - name: Baixar o ZIM da release
         run: |
           mkdir -p in out
+          # o evento "published" chega antes de o arquivo terminar de subir (gh release create publica a release e só
+          # depois manda o .zim; em 27/11/2026 o download saiu vazio 8 s depois): espera até 20 min por ele
+          ready() {
+            gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets \
+              --jq '[.assets[] | select(.name | endswith(".zim")) | .state] | length > 0 and all(. == "uploaded")'
+          }
+          for i in $(seq 40); do
+            [ "$(ready)" = true ] && break
+            echo "o .zim da release $TAG ainda está subindo ($i/40): de novo em 30 s"
+            sleep 30
+          done
+          [ "$(ready)" = true ] || { echo "::error::nenhum .zim pronto na release $TAG depois de 20 min"; exit 1; }
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*.zim' -D in
           ls -la in
       - name: Aplicar o layout para celular
         run: |
-          for f in in/*.zim; do python mobile/patch_zim.py "$f" "out/$(basename "$f")"; done
+          for f in in/*.zim; do
+            # o ZIM da wiki (zim.yml) já sai com o layout: a release que ele cria dispara este fluxo, e não há o que refazer
+            if python -c 'import sys; from libzim.reader import Archive; sys.exit(0 if Archive(sys.argv[1]).has_entry_by_path("_res_/mobile.css") else 1)' "$f"; then
+              echo "$f já tem o layout para celular: fica como está"
+              continue
+            fi
+            python mobile/patch_zim.py "$f" "out/$(basename "$f")"
+          done
           ls -la out
       - name: Trocar o arquivo na release
-        run: gh release upload "$TAG" out/*.zim -R "$GITHUB_REPOSITORY" --clobber
+        run: |
+          if ls out/*.zim >/dev/null 2>&1; then
+            gh release upload "$TAG" out/*.zim -R "$GITHUB_REPOSITORY" --clobber
+          else
+            echo "nada a trocar na release $TAG"
+          fi
