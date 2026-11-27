@@ -1,4 +1,4 @@
-# O ZIM diário da WalkScape Wiki, inteiro no GitHub Actions (sem servidor): todo dia às 03:00 UTC (ou à mão, em
+# O ZIM diário da WalkScape Wiki, inteiro no GitHub Actions (sem servidor): todo dia às 04:23 UTC (ou à mão, em
 # Actions > "ZIM da wiki" > Run workflow), o mwoffliner baixa a wiki, mobile/patch_zim.py aplica o layout para celular e
 # a release v<AAAA-MM-DD> recebe o arquivo (criada, ou com o arquivo trocado se já existir).
 #
@@ -8,7 +8,9 @@ name: ZIM da wiki
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    # fora da hora cheia: em 27/11/2026 o "0 3 * * *" não rodou (o GitHub atrasa ou descarta agendamentos na hora
+    # cheia); e depois das ~03:35 UTC, quando o job antigo de fora do GitHub publica a release do dia, que esta troca
+    - cron: "23 4 * * *"
   workflow_dispatch:
     inputs:
       articles:

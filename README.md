@@ -6,7 +6,7 @@ Daily ZIM dumps of the [WalkScape Wiki](https://wiki.walkscape.app), for reading
 
 ## How it is built
 
-Everything runs on GitHub Actions, once a day at 03:00 UTC: [`.github/workflows/zim.yml`](.github/workflows/zim.yml)
+Everything runs on GitHub Actions, once a day at 04:23 UTC: [`.github/workflows/zim.yml`](.github/workflows/zim.yml)
 downloads the wiki with [mwoffliner](https://github.com/openzim/mwoffliner) 1.17.5, applies the mobile layout below and
 publishes the release `vYYYY-MM-DD`. It can also be run by hand from the Actions tab. If a release is published by other
 means, [`.github/workflows/mobile.yml`](.github/workflows/mobile.yml) applies the layout to it.
